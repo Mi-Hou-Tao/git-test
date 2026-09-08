@@ -36,6 +36,7 @@ for epoch in range(1000):
 
     #梯度1
     dL_dz2 = y_pred - y_true
+
     dL_dW2 = dL_dz2 * a1
     dL_db2 = dL_dz2
 
