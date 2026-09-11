@@ -52,7 +52,7 @@ X_train = torch.tensor (X_train,dtype=torch.float32)
 X_val = torch.tensor(X_val,dtype=torch.float32)
 X_test = torch.tensor (X_test,dtype=torch.float32)
 y_train = torch.tensor(y_train,dtype=torch.float32)
-y_val = torch.tensor(y_val,dtype=torch.float32)
+y_val = torch.tensor(y_val,dtype=torch.float32) 
 y_test = torch.tensor(y_test,dtype=torch.float32)
 
 model = nn.Sequential(
