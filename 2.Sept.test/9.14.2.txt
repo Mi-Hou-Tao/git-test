@@ -1,6 +1,6 @@
 针对9.14.1.txt的破解版
-【1】import pandas as pd //引入了pd工具，后面才能使用
-【2】df = pd.read_csv("文件名) //录入数据，数据集为df
+【1】import pandas as pd //导入pandas库，并给它起名pd，后面才能用pd.xxx调用
+【2】df = pd.read_csv("文件名) //读取数据，保存为df
 
 【3】pandas转换NumPy的两种写法(分别以X、y为例)
      
@@ -19,8 +19,8 @@
      列，共len(df)行
 
      a,b = train_test_split( //train_test_split为划分数据的一个工具
-        indeces, //本次要划分的是行索引，得到的数字随后用来从原始数据中取出对应的行
-        test_size = 0.20, //以0.2为标准划分，即20%的数据划分给a,余下的80%分给b
+        indices, //本次要划分的是行索引，得到的数字随后用来从原始数据中取出对应的行
+        test_size = 0.20, //以0.2为标准划分，即80%的索引划分给a,余下的20%分给b
         random_state = 42 //这条代码可以实现划分是随机的，42无特殊含义，换成其它种子9336等都可以
      )
 
@@ -28,19 +28,19 @@
      d = X[b] //剩余的数据成另一个数组
      
      ##2.先整体赋值再划分数据集(更简单)
-     X_train,X_test = train_test_split(
-        X,
+     X_train,X_test，y_trsin,y_test = train_test_split(
+        X,y,
         test_size = 0.20,
         random_state = 42
-     ) 
+     ) //从X中划分给X_train、X_test,从y中划分给y_train、y_test
 
 
-【5】 #标准化（吧每一列数据缩放到均值0、标准差1附近，规避数值单位对权重的影响）
+【5】 #标准化（吧每一列数据转换到均值0、标准差1附近，规避数值单位对权重的影响）
      from sklearn.preprocessing import StandardScaler //同样引用标准化需要用到的工具
      scaler_x = StandardScaler() //创建一个专门标准化X的工具
      c = scaler_x.fit_transform(c) //把原来的数组c标准化，fit即从训练集学习标准化所需的均值的标准差，
      tansform即按照参数转换，fit_transform表示合并为一步
-     d = scaler_x.transform(d) // 只进行transform,对于测试集与验证集来说，进行fit会使数据提前处理造成泄
+     d = scaler_x.transform(d) // 只进行transform,对于测试集与验证集来说，重新进行fit会使数据提前处理造成泄
      露，它们直接使用训练集得到的均值与标准差
      scaler_y = StandardScaler() //专门标准化y的工具，scaler_x和scaler_y是两个独立的参数存储器不能公用，
      因为同一个scaler连续fit两次，第二次会把先前的参数覆盖掉。得到的scaler_x/y后面恢复原始数据时会用到
@@ -53,22 +53,22 @@
 
 【7】 #转换
      c = torch.tensor(c,dtype=torch.float32) //把NumPy数组转换为PyTorch的Tensor(张量)，方便
-     交给PyTorch神经网络计算，并令数据类型为32位浮点数，为后续权重、梯度计算的指定数据类型
+     交给PyTorch神经网络计算，并令数据类型为32位浮点数，方便后续权重、梯度计算的计算
 
 
-【8】 #固定随机化
-     torch.manual_seed(42) //固定PyTorch使用的随机数序列，每次都与初始值保持一致，即每次都用相同的权重开始训练
+【8】 #固定随机种子
+     torch.manual_seed(42) //固定PyTorch使用的随机数序列，每次运行时的随机化保持一致
      
 
 【9】 #搭建神经网络
      model = nn.Sequential( //按照书写的顺序将层与层连接
-        nn.Linear(4,12) //这一层有4个输入，同时有32个神经元接收值并计算，输出32个新值
-        ReLU() //加入非线性判断
+        nn.Linear(4,32)， //这一层有4个输入，同时有32个神经元接收值并计算，输出32个新值
+        nn.ReLU() //加入非线性判断
      )
 
 
 【10】#MSE与优化器
-     loss_fn = nn.MSELoss() //MSELoss计算预测与真实值之差，用于梯度计算
+     loss_fn = nn.MSELoss() //MSELoss计算预测与真实值之间误差的平方并求平均，用于梯度计算
      optimizer = torch.optim.Adam( //optimizer可根据误差与梯度调整权重与偏置
      model.parameters(), //取出可训练参数交给Adam
      lr = 0.01 //设置学习率
@@ -78,7 +78,7 @@
 
 【11】#验证集
      model.eval() //模型进入验证模式，此时某些特殊层会做更改
-     with.torch.no_grad(): //不记录梯度
+     with torch.no_grad(): //不记录梯度
      val_loss.item() //.item把Tensor取成普通Python数字，否则可能输出tensor(0.0041)
      而不是0.0041
 
@@ -86,5 +86,5 @@
      mae = mean_absolute_error(y_test_real,y_test_pred_real) //平均绝对误差：平均每次差多少度
      rmse = np.sqrt(
      mean_squared_error(y_test_real,y_test_pred_real)
-     ) //会暴露离谱的值，越小越好
+     ) //对较大的预测误差更敏感，越小越好
      r2 = r2_score(y_test_real,y_test_pred_real) //解释预测能力，越接近1越好
